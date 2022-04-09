@@ -43,7 +43,7 @@ bool testval(int sqr, int val) {
   int i;
 
   for (i = 0; i != GROUPS_PER_SQUARE; ++i)
-    if (val >> 1 & *sqrpool[sqr].gps[i] >> 1)
+    if (val & *sqrpool[sqr].gps[i])
       return false;
 
   return true;
@@ -81,9 +81,7 @@ int rdfile(const char *fname) {
     }
     else if (c > '0' && c <= '9') {
       ++m;
-      sqrpool[SQUARES_NUM - m].val = 1;
-      for (j = 0; j != c - DIGIT_OFFSET; ++j)
-        sqrpool[SQUARES_NUM - m].val <<= 1;
+      sqrpool[SQUARES_NUM - m].val = EMPTY_SQUARE << c - DIGIT_OFFSET;
       sqrpool[SQUARES_NUM - m].ind = i++;
     }
   }
