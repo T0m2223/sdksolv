@@ -13,10 +13,18 @@
 #define EMPTY_SQUARE 1
 #if __linux__
 #include <strings.h>
-#define FFS(in, out) ((out) = ffs(in))
 #elif _WIN32
-#include <intrin.h>
-#define FFS(in, out) (_BitScanReverse((unsigned long *) &(out), (in)))
+int ffs(int i) {
+  static const unsigned char table[] = {
+    0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8
+  };
+  unsigned int a;
+  unsigned int x = i & -i;
+
+  a= x <= 0xffff ? (x <= 0xff ? 0 : 8) : (x <= 0xffffff ? 16 : 24);
+
+  return table[x >> a] + a;
+}
 #endif
 
 #define PRINT_DEPTH 3
@@ -104,7 +112,7 @@ void wrtobuf(int *buf) {
   int i;
 
   for (i = 0; i != SQUARES_NUM; ++i)
-    FFS(sqrpool[i].val >> 1, buf[sqrpool[i].ind]);
+    buf[sqrpool[i].ind] = ffs(sqrpool[i].val >> 1);
 }
 
 void prtprg(int p) {
