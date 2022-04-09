@@ -2,7 +2,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <strings.h>
 
 #define DIGIT_OFFSET 48
 #define GROUP_SIZE 9
@@ -12,6 +11,13 @@
 
 #define VALUE_END 1024
 #define EMPTY_SQUARE 1
+#if __linux__
+#include <strings.h>
+#define FFS(in, out) ((out) = ffs(in))
+#elif _WIN32
+#include <intrin.h>
+#define FFS(in, out) (_BitScanReverse(&(out), (in)))
+#endif
 
 #define PRINT_DEPTH 3
 #define BAR_SIZE 25
@@ -98,7 +104,7 @@ void wrtobuf(int *buf) {
   int i;
 
   for (i = 0; i != SQUARES_NUM; ++i)
-    buf[sqrpool[i].ind] = ffs(sqrpool[i].val >> 1);
+    FFS(sqrpool[i].val >> 1, buf[sqrpool[i].ind]);
 }
 
 void prtprg(int p) {
