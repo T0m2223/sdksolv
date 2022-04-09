@@ -16,7 +16,7 @@
 #define FFS(in, out) ((out) = ffs(in))
 #elif _WIN32
 #include <intrin.h>
-#define FFS(in, out) (_BitScanReverse(&(out), (in)))
+#define FFS(in, out) (_BitScanReverse((unsigned long *) &(out), (in)))
 #endif
 
 #define PRINT_DEPTH 3
