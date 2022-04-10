@@ -190,8 +190,8 @@ void prtbuf(const int *buf) {
 }
 
 int main(int argc, char **argv) {
-  char outbuf[IO_BUFFER_SIZE];
-  setbuffer(stdout, outbuf, IO_BUFFER_SIZE);
+  char outbuf[OUT_BUFFER_SIZE];
+  setbuffer(stdout, outbuf, OUT_BUFFER_SIZE);
 
   int n;
 
