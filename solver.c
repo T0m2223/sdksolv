@@ -119,19 +119,19 @@ int solve(int end, int n, int *buf) {
 
   for (i = 0; i != n; ++i) {
     while (d != end) {
-      for (j = sqrpool[d].val << 1; j != VALUE_END; j <<= 1) {
-        if (testval(d, j)) {
+      for (j = sqrpool[d].val << 1; ; j <<= 1) {
+        if (j == VALUE_END) {
+          if (!d)
+            return i;
+
+          sqrpool[d].val = EMPTY_SQUARE;
+          rlvval(--d);
+          break;
+        } else if (testval(d, j)) {
           sqrpool[d].val = j;
           aplval(d++);
           break;
         }
-      }
-
-      if (!d)
-        return i;
-      else if (j == VALUE_END) {
-        sqrpool[d].val = EMPTY_SQUARE;
-        rlvval(--d);
       }
     }
 
