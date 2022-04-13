@@ -214,7 +214,7 @@ void prtbuf(const int *buf, FILE *stream) {
 
 struct config prsargs(int argc, char **argv) {
   struct config cfg = {
-    .maxsol = false,
+    .maxsol = 1,
     .outfile = NULL,
     .prgbar = true,
     .prgdep = 3,
