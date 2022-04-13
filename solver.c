@@ -133,6 +133,8 @@ void prtprg() {
 int solve(int end, int n, int *buf) {
   int i, j, d = 0;
 
+  prtprg(p);
+
   for (i = 0; i != n; ++i) {
     while (d != end) {
       for (j = sqrpool[d].val << 1; j != VALUE_END; j <<= 1) {
