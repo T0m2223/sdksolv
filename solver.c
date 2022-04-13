@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdatomic.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,7 +22,7 @@ int ffs(int i) {
   unsigned int a;
   unsigned int x = i & -i;
 
-  a= x <= 0xffff ? (x <= 0xff ? 0 : 8) : (x <= 0xffffff ? 16 : 24);
+  a = x <= 0xffff ? (x <= 0xff ? 0 : 8) : (x <= 0xffffff ? 16 : 24);
 
   return table[x >> a] + a;
 }
@@ -29,7 +30,6 @@ int ffs(int i) {
 
 #define PRINT_DEPTH 3
 #define BAR_SIZE 25
-#define OUT_BUFFER_SIZE 1024
 
 const int grpdict[SQUARES_NUM][GROUPS_PER_SQUARE] = {
   0, 9, 18, 0, 9, 19, 0, 9, 20, 1, 9, 21, 1, 9, 22, 1, 9, 23, 2, 9, 24, 2, 9, 25, 2, 9, 26, 0, 10, 18, 0, 10, 19, 0, 10, 20, 1, 10, 21, 1, 10, 22, 1, 10, 23, 2, 10, 24, 2, 10, 25, 2, 10, 26, 0, 11, 18, 0, 11, 19, 0, 11, 20, 1, 11, 21, 1, 11, 22, 1, 11, 23, 2, 11, 24, 2, 11, 25, 2, 11, 26, 3, 12, 18, 3, 12, 19, 3, 12, 20, 4, 12, 21, 4, 12, 22, 4, 12, 23, 5, 12, 24, 5, 12, 25, 5, 12, 26, 3, 13, 18, 3, 13, 19, 3, 13, 20, 4, 13, 21, 4, 13, 22, 4, 13, 23, 5, 13, 24, 5, 13, 25, 5, 13, 26, 3, 14, 18, 3, 14, 19, 3, 14, 20, 4, 14, 21, 4, 14, 22, 4, 14, 23, 5, 14, 24, 5, 14, 25, 5, 14, 26, 6, 15, 18, 6, 15, 19, 6, 15, 20, 7, 15, 21, 7, 15, 22, 7, 15, 23, 8, 15, 24, 8, 15, 25, 8, 15, 26, 6, 16, 18, 6, 16, 19, 6, 16, 20, 7, 16, 21, 7, 16, 22, 7, 16, 23, 8, 16, 24, 8, 16, 25, 8, 16, 26, 6, 17, 18, 6, 17, 19, 6, 17, 20, 7, 17, 21, 7, 17, 22, 7, 17, 23, 8, 17, 24, 8, 17, 25, 8, 17, 26
@@ -39,6 +39,8 @@ int grppool[GROUPS_NUM];
 struct square {
   int ind, val, *gps[GROUPS_PER_SQUARE];
 } sqrpool[SQUARES_NUM];
+atomic_int prg;
+atomic_bool done;
 
 void aplval(int sqr) {
   int i;
@@ -116,11 +118,11 @@ void wrtobuf(int *buf) {
     buf[sqrpool[i].ind] = ffs(sqrpool[i].val >> 1);
 }
 
-void prtprg(int p) {
+void prtprg() {
   int i;
 
   printf("\e[1A\e[91mProgress: [");
-  for (i = 0; i != floor(p * BAR_SIZE / pow(GROUP_SIZE, PRINT_DEPTH + 1)); ++i)
+  for (i = 0; i != floor(prg * BAR_SIZE / pow(GROUP_SIZE, PRINT_DEPTH + 1)); ++i)
     printf("#");
   printf("\e[0m");
   for (; i != BAR_SIZE; ++i)
@@ -129,7 +131,7 @@ void prtprg(int p) {
 }
 
 int solve(int end, int n, int *buf) {
-  int i, j, d = 0, p = 0;
+  int i, j, d = 0;
 
   for (i = 0; i != n; ++i) {
     while (d != end) {
@@ -139,20 +141,17 @@ int solve(int end, int n, int *buf) {
           aplval(d++);
           break;
         } else if (d <= PRINT_DEPTH)
-          p += pow(GROUP_SIZE, PRINT_DEPTH - d);
+          prg += pow(GROUP_SIZE, PRINT_DEPTH - d);
       }
 
-      if (!d) {
-        prtprg(p);
+      if (!d)
         return i;
-      } else if (j == VALUE_END) {
+      else if (j == VALUE_END) {
         sqrpool[d].val = EMPTY_SQUARE;
         rlvval(--d);
         if (d == PRINT_DEPTH)
-          p += pow(GROUP_SIZE, PRINT_DEPTH - d);
+          prg += pow(GROUP_SIZE, PRINT_DEPTH - d);
       }
-      if (d <= PRINT_DEPTH)
-        prtprg(p);
     }
 
     wrtobuf(buf + i * SQUARES_NUM);
@@ -160,6 +159,11 @@ int solve(int end, int n, int *buf) {
   }
 
   return i;
+}
+
+void *function(void *args) {
+  while (!done)
+    prtprg();
 }
 
 void prtbuf(const int *buf) {
@@ -189,10 +193,18 @@ void prtbuf(const int *buf) {
   printf("\n╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝\n");
 }
 
-int main(int argc, char **argv) {
-  char outbuf[OUT_BUFFER_SIZE];
-  setbuffer(stdout, outbuf, OUT_BUFFER_SIZE);
+void prsargs(int argc, char **argv) {
+  while (argc) {
+    if (strcmp("--output", *argv) || strcmp("-o", *argv)) {
+      if (argc == 1) {
+        fprintf(stderr, "")
+        exit(EXIT_FAILURE);
+      }
+    }
+  }
+}
 
+int main(int argc, char **argv) {
   int n;
 
   if (argc == 3)
@@ -212,16 +224,22 @@ int main(int argc, char **argv) {
   int end = rdfile(argv[1]);
   int buf[n * SQUARES_NUM];
   int s, i;
+  pthread_t prgbar;
+  done = false;
+  prg = 0;
 
   printf("\n\e[91m          < SUDOKU SOLVER >          \e[31m\n\n  Read-in field:\e[0m\n");
   wrtobuf(buf);
   prtbuf(buf);
 
   printf("\n\n");
+  pthread_create(&prgbar, NULL, function, NULL);
 
   initgps();
   initvals(end);
   s = solve(end, n, buf);
+  done = true;
+  pthread_join(prgbar, NULL);
 
   printf("\e[0m─────────────────────────────────────\n\n\e[91mFound \e[0m%d\e[91m solution(s)...\e[0m\n", s);
   for (i = 0; i != s; ++i) {
