@@ -148,20 +148,17 @@ int solve(int end, int n, int *buf) {
 }
 
 unsigned long long calcprg(int prgdep) {
-  int d, cpy;
+  int d, tmp;
   unsigned long long prg = 0;
 
   for (d = 0; d != prgdep; ++d) {
-    cpy = sqrpool[d].val;
+    tmp = sqrpool[d].val >> 1;
 
-    if (cpy == EMPTY_SQUARE)
-      continue;
-
-    cpy >>= 1;
-
-    while (cpy != EMPTY_SQUARE) {
-      prg += pow(GROUP_SIZE, prgdep - d - 1);
-      cpy >>= 1;
+    if (tmp) {
+      while (tmp != EMPTY_SQUARE) {
+        prg += pow(GROUP_SIZE, prgdep - d - 1);
+        tmp >>= 1;
+      }
     }
   }
 
