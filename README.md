@@ -7,7 +7,7 @@ A simple, brute force sudoku solver written in c. The solver doesn't support mul
 
 # Installation
 - `git clone git@github.com:T0m2223/sdksolv.git`
-- `cd ./sdksolv`
+- `cd ./sdksolv/`
 - `make`
 - `./sdksolv --help`
 
