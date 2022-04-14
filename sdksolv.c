@@ -78,9 +78,15 @@ void initgps() {
       sqrpool[i].gps[j] = grppool + grpdict[sqrpool[i].ind][j];
 }
 
-void initvals(int start) {
-  for (; start != SQUARES_NUM; ++start)
+bool initvals(int start) {
+  for (; start != SQUARES_NUM; ++start) {
+    if (!testval(start, sqrpool[start].val))
+      return false;
+
     aplval(start);
+  }
+
+  return true;
 }
 
 int rdfile(FILE *fp) {
@@ -318,8 +324,7 @@ int main(int argc, char **argv) {
   }
 
   initgps();
-  initvals(end);
-  s = solve(end, cfg.maxsol, buf);
+  s = initvals(end) ? solve(end, cfg.maxsol, buf) : 0;
   if (cfg.prgbar) {
     done = true;
     pthread_join(barthrd, NULL);
