@@ -91,8 +91,7 @@ int rdfile(FILE *fp) {
     if (c == '0') {
       sqrpool[n].val = EMPTY_SQUARE;
       sqrpool[n++].ind = i++;
-    }
-    else if (c > '0' && c <= '9') {
+    } else if (c > '0' && c <= '9') {
       ++m;
       sqrpool[SQUARES_NUM - m].val = EMPTY_SQUARE << c - DIGIT_OFFSET;
       sqrpool[SQUARES_NUM - m].ind = i++;
