@@ -344,7 +344,6 @@ int main(int argc, char **argv) {
 
   fprintf(cfg.stream, "\n\e[91mDone.\e[0m\n\n");
   fclose(cfg.stream);
-
   return EXIT_SUCCESS;
 }
 
