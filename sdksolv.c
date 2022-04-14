@@ -14,7 +14,7 @@
 
 #define VALUE_END 1024
 #define EMPTY_SQUARE 1
-#if __linux__
+#ifdef __linux__
 #include <strings.h>
 #else
 int ffs(int i) {
