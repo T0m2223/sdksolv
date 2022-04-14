@@ -12,5 +12,5 @@ A simple, brute force sudoku solver written in c. The solver doesn't support mul
 - `./sdksolv --help`
 
 # Input File
-- only digits are read
+- only digits are beeing read
 - 0 indicates an empty square
