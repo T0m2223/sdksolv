@@ -307,7 +307,7 @@ int main(int argc, char **argv) {
   int s, i, end = rdfile(cfg.infile), buf[cfg.maxsol * SQUARES_NUM];
   pthread_t barthrd;
 
-  fprintf(cfg.stream, "\n\e[91m          < SUDOKU SOLVER >          \e[31m\n\n  Read-in field:\e[0m\n");
+  fprintf(cfg.stream, "\n\e[91m          < SUDOKU SOLVER >\e[31m\n\n  Read-in field:\e[0m\n");
   wrtobuf(buf);
   prtbuf(buf, cfg.stream);
 
