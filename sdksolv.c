@@ -168,13 +168,13 @@ unsigned long long calcprg(int prgdep) {
 void prtprg(unsigned long long prg, int prgdep, FILE *stream) {
   int i, tags = floor(BAR_SIZE * prg / (pow(GROUP_SIZE, prgdep)));
 
-  fprintf(stream, "\e[1A\e[91mProgress: [");
+  fprintf(stream, "\x1b[1A\x1b[91mProgress: [");
   for (i = 0; i != tags; ++i)
     fprintf(stream, "#");
-  fprintf(stream, "\e[0m");
+  fprintf(stream, "\x1b[0m");
   for (; i != BAR_SIZE; ++i)
     fprintf(stream, ".");
-  fprintf(stream, "\e[91m]\e[0m\n");
+  fprintf(stream, "\x1b[91m]\x1b[0m\n");
 }
 
 void *barrtn(void *arg) {
@@ -228,24 +228,24 @@ struct config prsargs(int argc, char **argv) {
   while (argc) {
     if (!strcmp("--max-solutions", *argv) || !strcmp("-m", *argv)) {
       if (argc == 1) {
-        fprintf(stderr, "\n\e[31mError:\e[91m No value for max-solutions specified!\e[0m\n\n");
+        fprintf(stderr, "\n\x1b[31mError:\x1b[91m No value for max-solutions specified!\x1b[0m\n\n");
         exit(EXIT_FAILURE);
       }
       cfg.maxsol = atoi(argv[1]);
       if (cfg.maxsol < 1) {
-        fprintf(stderr, "\n\e[31mError:\e[91m Max-solutions must be a numeric value and at least\e[0m 1\e[91m!\e[0m\n\n");
+        fprintf(stderr, "\n\x1b[31mError:\x1b[91m Max-solutions must be a numeric value and at least\x1b[0m 1\x1b[91m!\x1b[0m\n\n");
         exit(EXIT_FAILURE);
       }
       ++argv;
       --argc;
     } else if (!strcmp("--output", *argv) || !strcmp("-o", *argv)) {
       if (argc == 1) {
-        fprintf(stderr, "\n\e[31mError:\e[91m No output file specified!\e[0m\n\n");
+        fprintf(stderr, "\n\x1b[31mError:\x1b[91m No output file specified!\x1b[0m\n\n");
         exit(EXIT_FAILURE);
       }
       cfg.outfile = fopen(argv[1], "w");
       if (cfg.outfile == NULL) {
-        fprintf(stderr, "\n\e[31mError:\e[91m Couldn't open file\e[0m %s \e[91mfor writing!\e[0m\n\n", argv[1]);
+        fprintf(stderr, "\n\x1b[31mError:\x1b[91m Couldn't open file\x1b[0m %s \x1b[91mfor writing!\x1b[0m\n\n", argv[1]);
         exit(EXIT_FAILURE);
       }
       ++argv;
@@ -254,12 +254,12 @@ struct config prsargs(int argc, char **argv) {
       cfg.prgbar = false;
     } else if (!strcmp("--progress-update-depth", *argv) || !strcmp("-d", *argv)) {
       if (argc == 1) {
-        fprintf(stderr, "\n\e[31mError:\e[91m No value for progress-update-depth specified!\e[0m\n\n");
+        fprintf(stderr, "\n\x1b[31mError:\x1b[91m No value for progress-update-depth specified!\x1b[0m\n\n");
         exit(EXIT_FAILURE);
       }
       cfg.prgdep = atoi(argv[1]);
       if (cfg.prgdep < 1) {
-        fprintf(stderr, "\n\e[31mError:\e[91m Progress-update-depth must be a numeric value and at least\e[0m 1\e[91m!\e[0m\n\n");
+        fprintf(stderr, "\n\x1b[31mError:\x1b[91m Progress-update-depth must be a numeric value and at least\x1b[0m 1\x1b[91m!\x1b[0m\n\n");
         exit(EXIT_FAILURE);
       }
       ++argv;
@@ -267,25 +267,25 @@ struct config prsargs(int argc, char **argv) {
     } else if (!strcmp("--quiet", *argv) || !strcmp("-q", *argv)) {
       cfg.stream = fopen("/dev/null", "w");
       if (cfg.stream == NULL) {
-        fprintf(stderr, "\n\e[31mError:\e[91m Couldn't open\e[0m /dev/null\e[91mfor writing!\e[0m\n\n");
+        fprintf(stderr, "\n\x1b[31mError:\x1b[91m Couldn't open\x1b[0m /dev/null\x1b[91mfor writing!\x1b[0m\n\n");
         exit(EXIT_FAILURE);
       }
     } else if (!strcmp("--verbose", *argv) || !strcmp("-v", *argv)) {
       cfg.verbose = true;
     } else if (!strcmp("--help", *argv) || !strcmp("-h", *argv)) {
-      printf("\n\e[31mUsage:\e[91m sdksolv [\e[0moption...\e[91m] <\e[0mfile\e[91m>\n\n\e[31mOptions:\e[0m\n  -\e[91mm\e[0m, --\e[91mmax-solutions <\e[0mnumber\e[91m>\e[0m          Stop after n solutions have been found\n  -\e[91mo\e[0m, --\e[91moutput <\e[0mfile\e[91m>\e[0m                   Print solutions to file\n\n  -\e[91mb\e[0m, --\e[91mhide-progress-bar\e[0m               Disable progress bar\n  -\e[91md\e[0m, --\e[91mprogress-update-depth <\e[0mnumber\e[91m>\e[0m  Precision of progress bar\n\n  -\e[91mq\e[0m, --\e[91mquiet\e[0m                           Only print errors\n  -\e[91mv\e[0m, --\e[91mverbose\e[0m                         Print out all found solutions\n\n  -\e[91mh\e[0m, --\e[91mhelp\e[0m                            Print this page\n\n");
+      printf("\n\x1b[31mUsage:\x1b[91m sdksolv [\x1b[0moption...\x1b[91m] <\x1b[0mfile\x1b[91m>\n\n\x1b[31mOptions:\x1b[0m\n  -\x1b[91mm\x1b[0m, --\x1b[91mmax-solutions <\x1b[0mnumber\x1b[91m>\x1b[0m          Stop after n solutions have been found\n  -\x1b[91mo\x1b[0m, --\x1b[91moutput <\x1b[0mfile\x1b[91m>\x1b[0m                   Print solutions to file\n\n  -\x1b[91mb\x1b[0m, --\x1b[91mhide-progress-bar\x1b[0m               Disable progress bar\n  -\x1b[91md\x1b[0m, --\x1b[91mprogress-update-depth <\x1b[0mnumber\x1b[91m>\x1b[0m  Precision of progress bar\n\n  -\x1b[91mq\x1b[0m, --\x1b[91mquiet\x1b[0m                           Only print errors\n  -\x1b[91mv\x1b[0m, --\x1b[91mverbose\x1b[0m                         Print out all found solutions\n\n  -\x1b[91mh\x1b[0m, --\x1b[91mhelp\x1b[0m                            Print this page\n\n");
       exit(EXIT_SUCCESS);
     } else if(**argv == '-') {
-      fprintf(stderr, "\n\e[31mError:\e[91m Unknown option\e[0m %s\e[91m!\e[0m\n\n\e[32mHint:\e[92m Use\e[0m sdksolv --help \e[92mfor help page.\e[0m\n\n", *argv);
+      fprintf(stderr, "\n\x1b[31mError:\x1b[91m Unknown option\x1b[0m %s\x1b[91m!\x1b[0m\n\n\x1b[32mHint:\x1b[92m Use\x1b[0m sdksolv --help \x1b[92mfor help page.\x1b[0m\n\n", *argv);
       exit(EXIT_FAILURE);
     } else {
       if (cfg.infile != NULL) {
-        fprintf(stderr, "\n\e[31mError:\e[91m Multiple input files specified!\e[0m\n\n");
+        fprintf(stderr, "\n\x1b[31mError:\x1b[91m Multiple input files specified!\x1b[0m\n\n");
         exit(EXIT_FAILURE);
       }
       cfg.infile = fopen(*argv, "r");
       if (cfg.infile == NULL) {
-        fprintf(stderr, "\n\e[31mError:\e[91m Couldn't open file\e[0m %s \e[91mfor reading!\e[0m\n\n", *argv);
+        fprintf(stderr, "\n\x1b[31mError:\x1b[91m Couldn't open file\x1b[0m %s \x1b[91mfor reading!\x1b[0m\n\n", *argv);
         exit(EXIT_FAILURE);
       }
     }
@@ -295,12 +295,12 @@ struct config prsargs(int argc, char **argv) {
   }
 
   if (cfg.infile == NULL) {
-    fprintf(stderr, "\n\e[31mError:\e[91m No input file specified!\e[0m\n\n", *argv);
+    fprintf(stderr, "\n\x1b[31mError:\x1b[91m No input file specified!\x1b[0m\n\n", *argv);
     exit(EXIT_FAILURE);
   }
 
   if(cfg.prgdep > 9)
-    fprintf(cfg.stream, "\n\e[33mWarning:\e[93m High progress-update-depth may result in graphical errors!\e[0m\n\n");
+    fprintf(cfg.stream, "\n\x1b[33mWarning:\x1b[93m High progress-update-depth may result in graphical errors!\x1b[0m\n\n");
 
   return cfg;
 }
@@ -310,7 +310,7 @@ int main(int argc, char **argv) {
   int s, i, end = rdfile(cfg.infile), buf[cfg.maxsol * SQUARES_NUM];
   pthread_t barthrd;
 
-  fprintf(cfg.stream, "\n\e[91m          < SUDOKU SOLVER >\e[31m\n\n  Read-in field:\e[0m\n");
+  fprintf(cfg.stream, "\x1b[?25l\n\x1b[91m          < SUDOKU SOLVER >\x1b[31m\n\n  Read-in field:\x1b[0m\n");
   wrtobuf(buf);
   prtbuf(buf, cfg.stream);
 
@@ -328,11 +328,11 @@ int main(int argc, char **argv) {
     prtprg(pow(GROUP_SIZE, cfg.prgdep), cfg.prgdep, cfg.stream);
   }
 
-  fprintf(cfg.stream, "\e[0m─────────────────────────────────────\n\n\e[91mFound \e[0m%d\e[91m solution(s)...\e[0m\n", s);
+  fprintf(cfg.stream, "\x1b[0m─────────────────────────────────────\n\n\x1b[91mFound \x1b[0m%d\x1b[91m solution(s)...\x1b[0m\n", s);
 
   if (cfg.verbose) {
     for (i = 0; i != s; ++i) {
-      fprintf(cfg.stream, "\n  \e[31mSolution[\e[0m%d\e[31m]:\e[0m\n", i);
+      fprintf(cfg.stream, "\n  \x1b[31mSolution[\x1b[0m%d\x1b[31m]:\x1b[0m\n", i);
       prtbuf(buf + i * SQUARES_NUM, cfg.stream);
     }
   }
@@ -344,7 +344,7 @@ int main(int argc, char **argv) {
     fclose(cfg.outfile);
   }
 
-  fprintf(cfg.stream, "\n\e[91mDone.\e[0m\n\n");
+  fprintf(cfg.stream, "\n\x1b[91mDone.\x1b[0m\x1b[?25h\n\n");
   fclose(cfg.stream);
   return EXIT_SUCCESS;
 }
