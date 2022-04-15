@@ -257,7 +257,7 @@ struct config prsargs(int argc, char **argv) {
       }
       cfg.prgdep = atoi(argv[1]);
       if (cfg.prgdep < 1 || cfg.prgdep > SQUARES_NUM) {
-        fprintf(stderr, "\n\x1b[31mError:\x1b[91m Progress-update-depth must be a numeric value and in range\x1b[0m 1 - 81\x1b[91m!\x1b[0m\n\n");
+        fprintf(stderr, "\n\x1b[31mError:\x1b[91m Progress-update-depth must be a numeric value and in range\x1b[0m 1 \x1b[91m-\x1b[0m 81\x1b[91m!\x1b[0m\n\n");
         exit(EXIT_FAILURE);
       }
       ++argv;
