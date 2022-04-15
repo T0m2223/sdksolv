@@ -152,13 +152,11 @@ unsigned long long calcprg(int prgdep) {
   unsigned long long prg = 0;
 
   for (d = 0; d != prgdep; ++d) {
-    tmp = sqrpool[d].val >> 1;
+    tmp = sqrpool[d].val >> 2;
 
-    if (tmp) {
-      while (tmp != EMPTY_SQUARE) {
-        prg += pow(GROUP_SIZE, prgdep - d - 1);
-        tmp >>= 1;
-      }
+    while (tmp) {
+      prg += pow(GROUP_SIZE, prgdep - d - 1);
+      tmp >>= 1;
     }
   }
 
