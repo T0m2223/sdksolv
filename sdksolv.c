@@ -17,11 +17,11 @@
 
 #define BAR_SIZE 25
 
-#ifdef __linux__
+#if __linux__
 #include <strings.h>
 #define NULL_FILE "/dev/null"
 
-#elifdef _WIN32
+#elif _WIN32
 #define NULL_FILE "NUL"
 int ffs(int i) {
   static const unsigned char table[] = {
