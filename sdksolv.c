@@ -187,6 +187,8 @@ void *barrtn(void *arg) {
     prg = calcprg(cfg.prgdep);
     prtprg(prg, cfg.prgdep, cfg.stream);
   }
+
+  return NULL;
 }
 
 void prtbuf(const int *buf, FILE *stream) {
