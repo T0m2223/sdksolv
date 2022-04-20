@@ -103,7 +103,7 @@ int rdfile(FILE *fp) {
       sqrpool[n++].ind = i++;
     } else if (c > '0' && c <= '9') {
       ++m;
-      sqrpool[SQUARES_NUM - m].val = EMPTY_SQUARE << c - DIGIT_OFFSET;
+      sqrpool[SQUARES_NUM - m].val = EMPTY_SQUARE << (c - DIGIT_OFFSET);
       sqrpool[SQUARES_NUM - m].ind = i++;
     }
   }
@@ -297,7 +297,7 @@ struct config prsargs(int argc, char **argv) {
   }
 
   if (cfg.infile == NULL) {
-    fprintf(stderr, "\n\x1b[31mError:\x1b[91m No input file specified!\x1b[0m\n\n", *argv);
+    fprintf(stderr, "\n\x1b[31mError:\x1b[91m No input file specified!\x1b[0m\n\n");
     exit(EXIT_FAILURE);
   }
 
