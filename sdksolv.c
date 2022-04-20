@@ -180,8 +180,8 @@ void prtprg(unsigned long long prg, int prgdep, FILE *stream) {
 }
 
 void *barrtn(void *arg) {
-  unsigned long long prg;
   struct config cfg = *((struct config *) arg);
+  unsigned long long prg;
 
   while (!done) {
     prg = calcprg(cfg.prgdep);
