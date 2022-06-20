@@ -219,6 +219,7 @@ void prtbuf(const int *buf, FILE *stream) {
 }
 
 struct config prsargs(int argc, char **argv) {
+  int arg = 1;
   struct config cfg = {
     .maxsol = 1,
     .outfile = NULL,
@@ -229,8 +230,8 @@ struct config prsargs(int argc, char **argv) {
     .infile = NULL
   };
 
-  while (argc) {
-    if (!strcmp("--max-solutions", *argv) || !strcmp("-m", *argv)) {
+  while (arg != argc) {
+    if (!strcmp("--max-solutions", argv[arg]) || !strcmp("-m", argv[arg])) {
       if (argc == 1) {
         fprintf(stderr, "\n\x1b[31mError:\x1b[91m No value for max-solutions specified!\x1b[0m\n\n");
         exit(EXIT_FAILURE);
@@ -242,7 +243,7 @@ struct config prsargs(int argc, char **argv) {
       }
       ++argv;
       --argc;
-    } else if (!strcmp("--output", *argv) || !strcmp("-o", *argv)) {
+    } else if (!strcmp("--output", argv[arg]) || !strcmp("-o", argv[arg])) {
       if (argc == 1) {
         fprintf(stderr, "\n\x1b[31mError:\x1b[91m No output file specified!\x1b[0m\n\n");
         exit(EXIT_FAILURE);
@@ -254,9 +255,9 @@ struct config prsargs(int argc, char **argv) {
       }
       ++argv;
       --argc;
-    } else if (!strcmp("--hide-progress-bar", *argv) || !strcmp("-b", *argv)) {
+    } else if (!strcmp("--hide-progress-bar", argv[arg]) || !strcmp("-b", argv[arg])) {
       cfg.prgbar = false;
-    } else if (!strcmp("--progress-update-depth", *argv) || !strcmp("-d", *argv)) {
+    } else if (!strcmp("--progress-update-depth", argv[arg]) || !strcmp("-d", argv[arg])) {
       if (argc == 1) {
         fprintf(stderr, "\n\x1b[31mError:\x1b[91m No value for progress-update-depth specified!\x1b[0m\n\n");
         exit(EXIT_FAILURE);
@@ -268,34 +269,33 @@ struct config prsargs(int argc, char **argv) {
       }
       ++argv;
       --argc;
-    } else if (!strcmp("--quiet", *argv) || !strcmp("-q", *argv)) {
+    } else if (!strcmp("--quiet", argv[arg]) || !strcmp("-q", argv[arg])) {
       cfg.stream = fopen(NULL_FILE, "w");
       if (cfg.stream == NULL) {
         fprintf(stderr, "\n\x1b[31mError:\x1b[91m Couldn't open\x1b[0m %s \x1b[91mfor writing!\x1b[0m\n\n", NULL_FILE);
         exit(EXIT_FAILURE);
       }
-    } else if (!strcmp("--verbose", *argv) || !strcmp("-v", *argv)) {
+    } else if (!strcmp("--verbose", argv[arg]) || !strcmp("-v", argv[arg])) {
       cfg.verbose = true;
-    } else if (!strcmp("--help", *argv) || !strcmp("-h", *argv)) {
-      printf("\n\x1b[31mUsage:\x1b[91m sdksolv [\x1b[0moption...\x1b[91m] <\x1b[0mfile\x1b[91m>\n\n\x1b[31mOptions:\x1b[0m\n  -\x1b[91mm\x1b[0m, --\x1b[91mmax-solutions <\x1b[0mnumber\x1b[91m>\x1b[0m          Stop after n solutions have been found\n  -\x1b[91mo\x1b[0m, --\x1b[91moutput <\x1b[0mfile\x1b[91m>\x1b[0m                   Print solutions to file\n\n  -\x1b[91mb\x1b[0m, --\x1b[91mhide-progress-bar\x1b[0m               Disable progress bar\n  -\x1b[91md\x1b[0m, --\x1b[91mprogress-update-depth <\x1b[0mnumber\x1b[91m>\x1b[0m  Precision of progress bar\n\n  -\x1b[91mq\x1b[0m, --\x1b[91mquiet\x1b[0m                           Only print errors\n  -\x1b[91mv\x1b[0m, --\x1b[91mverbose\x1b[0m                         Print out all found solutions\n\n  -\x1b[91mh\x1b[0m, --\x1b[91mhelp\x1b[0m                            Print this page\n\n");
+    } else if (!strcmp("--help", argv[arg]) || !strcmp("-h", argv[arg])) {
+      printf("\n\x1b[31mUsage:\x1b[91m %s [\x1b[0moption...\x1b[91m] <\x1b[0mfile\x1b[91m>\n\n\x1b[31mOptions:\x1b[0m\n  -\x1b[91mm\x1b[0m, --\x1b[91mmax-solutions <\x1b[0mnumber\x1b[91m>\x1b[0m          Stop after n solutions have been found\n  -\x1b[91mo\x1b[0m, --\x1b[91moutput <\x1b[0mfile\x1b[91m>\x1b[0m                   Print solutions to file\n\n  -\x1b[91mb\x1b[0m, --\x1b[91mhide-progress-bar\x1b[0m               Disable progress bar\n  -\x1b[91md\x1b[0m, --\x1b[91mprogress-update-depth <\x1b[0mnumber\x1b[91m>\x1b[0m  Precision of progress bar\n\n  -\x1b[91mq\x1b[0m, --\x1b[91mquiet\x1b[0m                           Only print errors\n  -\x1b[91mv\x1b[0m, --\x1b[91mverbose\x1b[0m                         Print out all found solutions\n\n  -\x1b[91mh\x1b[0m, --\x1b[91mhelp\x1b[0m                            Print this page\n\n", argv[0]);
       exit(EXIT_SUCCESS);
-    } else if(**argv == '-') {
-      fprintf(stderr, "\n\x1b[31mError:\x1b[91m Unknown option\x1b[0m %s\x1b[91m!\x1b[0m\n\n\x1b[32mHint:\x1b[92m Use\x1b[0m sdksolv --help \x1b[92mfor help page.\x1b[0m\n\n", *argv);
+    } else if(*argv[arg] == '-') {
+      fprintf(stderr, "\n\x1b[31mError:\x1b[91m Unknown option\x1b[0m %s\x1b[91m!\x1b[0m\n\n\x1b[32mHint:\x1b[92m Try\x1b[0m %s --help \x1b[92mfor help page.\x1b[0m\n\n", argv[arg], argv[0]);
       exit(EXIT_FAILURE);
     } else {
       if (cfg.infile != NULL) {
         fprintf(stderr, "\n\x1b[31mError:\x1b[91m Multiple input files specified!\x1b[0m\n\n");
         exit(EXIT_FAILURE);
       }
-      cfg.infile = fopen(*argv, "r");
+      cfg.infile = fopen(argv[arg], "r");
       if (cfg.infile == NULL) {
-        fprintf(stderr, "\n\x1b[31mError:\x1b[91m Couldn't open file\x1b[0m %s \x1b[91mfor reading!\x1b[0m\n\n", *argv);
+        fprintf(stderr, "\n\x1b[31mError:\x1b[91m Couldn't open file\x1b[0m %s \x1b[91mfor reading!\x1b[0m\n\n", argv[arg]);
         exit(EXIT_FAILURE);
       }
     }
 
-    ++argv;
-    --argc;
+    ++arg;
   }
 
   if (cfg.infile == NULL) {
@@ -310,7 +310,7 @@ struct config prsargs(int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
-  struct config cfg = prsargs(argc - 1, argv + 1);
+  struct config cfg = prsargs(argc, argv);
   int s, i, end = rdfile(cfg.infile), buf[cfg.maxsol * SQUARES_NUM];
   pthread_t barthrd;
 
