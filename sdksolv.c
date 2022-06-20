@@ -170,13 +170,13 @@ unsigned long long calcprg(int prgdep) {
 void prtprg(unsigned long long prg, int prgdep, FILE *stream) {
   int i, tags = floor(BAR_SIZE * prg / (pow(GROUP_SIZE, prgdep)));
 
-  fprintf(stream, "\x1b[1A\x1b[91mProgress: [");
+  fputs("\x1b[1A\x1b[91mProgress: [", stream);
   for (i = 0; i != tags; ++i)
-    fprintf(stream, "#");
-  fprintf(stream, "\x1b[0m");
+    fputc('#', stream);
+  fputs("\x1b[0m", stream);
   for (; i != BAR_SIZE; ++i)
-    fprintf(stream, ".");
-  fprintf(stream, "\x1b[91m]\x1b[0m\n");
+    fputc('.', stream);
+  fputs("\x1b[91m]\x1b[0m\n", stream);
 }
 
 void *barrtn(void *arg) {
@@ -194,28 +194,29 @@ void *barrtn(void *arg) {
 void prtbuf(const int *buf, FILE *stream) {
   int r, c, v;
 
-  fprintf(stream, "╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗\n║");
+  fputs("╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗\n║", stream);
   for (r = 0; r != 9; ++r) {
     for (c = 0; c != 9; ++c) {
       v = buf[r * 9 + c];
-      if (v)
-        fprintf(stream, " %d ", v);
-      else
-        fprintf(stream, "   ");
+      if (v) {
+        fputc(' ', stream);
+        fputc(v + DIGIT_OFFSET, stream);
+      } else
+        fputs("  ", stream);
       if (c % 3 == 2)
-        fprintf(stream, "║");
+        fputs(" ║", stream);
       else
-        fprintf(stream, "│");
+        fputs(" │", stream);
     }
 
     if (r == 8)
       break;
     else if (r % 3 == 2)
-      fprintf(stream, "\n╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣\n║");
+      fputs("\n╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣\n║", stream);
     else
-      fprintf(stream, "\n╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n║");
+      fputs("\n╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n║", stream);
   }
-  fprintf(stream, "\n╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝\n");
+  fputs("\n╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝\n", stream);
 }
 
 struct config prsargs(int argc, char **argv) {
@@ -233,17 +234,17 @@ struct config prsargs(int argc, char **argv) {
   while (arg != argc) {
     if (!strcmp("--max-solutions", argv[arg]) || !strcmp("-m", argv[arg])) {
       if (++arg == argc) {
-        fprintf(stderr, "\n\x1b[31mError:\x1b[91m No value for max-solutions specified!\x1b[0m\n\n");
+        fputs("\n\x1b[31mError:\x1b[91m No value for max-solutions specified!\x1b[0m\n\n", stderr);
         exit(EXIT_FAILURE);
       }
       cfg.maxsol = atoi(argv[arg]);
       if (cfg.maxsol < 1) {
-        fprintf(stderr, "\n\x1b[31mError:\x1b[91m Max-solutions must be a numeric value and at least\x1b[0m 1\x1b[91m!\x1b[0m\n\n");
+        fputs("\n\x1b[31mError:\x1b[91m Max-solutions must be a numeric value and at least\x1b[0m 1\x1b[91m!\x1b[0m\n\n", stderr);
         exit(EXIT_FAILURE);
       }
     } else if (!strcmp("--output", argv[arg]) || !strcmp("-o", argv[arg])) {
       if (++arg == argc) {
-        fprintf(stderr, "\n\x1b[31mError:\x1b[91m No output file specified!\x1b[0m\n\n");
+        fputs("\n\x1b[31mError:\x1b[91m No output file specified!\x1b[0m\n\n", stderr);
         exit(EXIT_FAILURE);
       }
       cfg.outfile = fopen(argv[arg], "w");
@@ -255,12 +256,12 @@ struct config prsargs(int argc, char **argv) {
       cfg.prgbar = false;
     } else if (!strcmp("--progress-update-depth", argv[arg]) || !strcmp("-d", argv[arg])) {
       if (++arg == argc) {
-        fprintf(stderr, "\n\x1b[31mError:\x1b[91m No value for progress-update-depth specified!\x1b[0m\n\n");
+        fputs("\n\x1b[31mError:\x1b[91m No value for progress-update-depth specified!\x1b[0m\n\n", stderr);
         exit(EXIT_FAILURE);
       }
       cfg.prgdep = atoi(argv[arg]);
       if (cfg.prgdep < 1 || cfg.prgdep > SQUARES_NUM) {
-        fprintf(stderr, "\n\x1b[31mError:\x1b[91m Progress-update-depth must be a numeric value and in range\x1b[0m 1 \x1b[91m-\x1b[0m 81\x1b[91m!\x1b[0m\n\n");
+        fputs("\n\x1b[31mError:\x1b[91m Progress-update-depth must be a numeric value and in range\x1b[0m 1 \x1b[91m-\x1b[0m 81\x1b[91m!\x1b[0m\n\n", stderr);
         exit(EXIT_FAILURE);
       }
     } else if (!strcmp("--quiet", argv[arg]) || !strcmp("-q", argv[arg])) {
@@ -279,7 +280,7 @@ struct config prsargs(int argc, char **argv) {
       exit(EXIT_FAILURE);
     } else {
       if (cfg.infile) {
-        fprintf(stderr, "\n\x1b[31mError:\x1b[91m Multiple input files specified!\x1b[0m\n\n");
+        fputs("\n\x1b[31mError:\x1b[91m Multiple input files specified!\x1b[0m\n\n", stderr);
         exit(EXIT_FAILURE);
       }
       cfg.infile = fopen(argv[arg], "r");
@@ -293,12 +294,12 @@ struct config prsargs(int argc, char **argv) {
   }
 
   if (!cfg.infile) {
-    fprintf(stderr, "\n\x1b[31mError:\x1b[91m No input file specified!\x1b[0m\n\n");
+    fputs("\n\x1b[31mError:\x1b[91m No input file specified!\x1b[0m\n\n", stderr);
     exit(EXIT_FAILURE);
   }
 
   if(cfg.prgdep > 9)
-    fprintf(cfg.stream, "\n\x1b[33mWarning:\x1b[93m High progress-update-depth may result in graphical errors!\x1b[0m\n\n");
+    fputs("\n\x1b[33mWarning:\x1b[93m High progress-update-depth may result in graphical errors!\x1b[0m\n\n", cfg.stream);
 
   return cfg;
 }
@@ -308,11 +309,11 @@ int main(int argc, char **argv) {
   int s, i, end = rdfile(cfg.infile), buf[cfg.maxsol * SQUARES_NUM];
   pthread_t barthrd;
 
-  fprintf(cfg.stream, "\x1b[?25l\n\x1b[91m          < SUDOKU SOLVER >\x1b[31m\n\n  Read-in field:\x1b[0m\n");
+  fputs("\x1b[?25l\n\x1b[91m          < SUDOKU SOLVER >\x1b[31m\n\n  Read-in field:\x1b[0m\n", cfg.stream);
   wrtobuf(buf);
   prtbuf(buf, cfg.stream);
 
-  fprintf(cfg.stream, "\n\n");
+  fputs("\n\n", cfg.stream);
   if (cfg.prgbar) {
     done = false;
     pthread_create(&barthrd, NULL, &barrtn, &cfg);
@@ -342,7 +343,7 @@ int main(int argc, char **argv) {
     fclose(cfg.outfile);
   }
 
-  fprintf(cfg.stream, "\n\x1b[91mDone.\x1b[0m\x1b[?25h\n\n");
+  fputs("\n\x1b[91mDone.\x1b[0m\x1b[?25h\n\n", cfg.stream);
   fclose(cfg.stream);
   return EXIT_SUCCESS;
 }
