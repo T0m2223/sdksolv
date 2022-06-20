@@ -249,7 +249,7 @@ struct config prsargs(int argc, char **argv) {
         exit(EXIT_FAILURE);
       }
       cfg.outfile = fopen(argv[1], "w");
-      if (cfg.outfile == NULL) {
+      if (!cfg.outfile) {
         fprintf(stderr, "\n\x1b[31mError:\x1b[91m Couldn't open file\x1b[0m %s \x1b[91mfor writing!\x1b[0m\n\n", argv[1]);
         exit(EXIT_FAILURE);
       }
@@ -271,7 +271,7 @@ struct config prsargs(int argc, char **argv) {
       --argc;
     } else if (!strcmp("--quiet", argv[arg]) || !strcmp("-q", argv[arg])) {
       cfg.stream = fopen(NULL_FILE, "w");
-      if (cfg.stream == NULL) {
+      if (!cfg.stream) {
         fprintf(stderr, "\n\x1b[31mError:\x1b[91m Couldn't open\x1b[0m %s \x1b[91mfor writing!\x1b[0m\n\n", NULL_FILE);
         exit(EXIT_FAILURE);
       }
@@ -284,12 +284,12 @@ struct config prsargs(int argc, char **argv) {
       fprintf(stderr, "\n\x1b[31mError:\x1b[91m Unknown option\x1b[0m %s\x1b[91m!\x1b[0m\n\n\x1b[32mHint:\x1b[92m Try\x1b[0m %s --help \x1b[92mfor help page.\x1b[0m\n\n", argv[arg], argv[0]);
       exit(EXIT_FAILURE);
     } else {
-      if (cfg.infile != NULL) {
+      if (cfg.infile) {
         fprintf(stderr, "\n\x1b[31mError:\x1b[91m Multiple input files specified!\x1b[0m\n\n");
         exit(EXIT_FAILURE);
       }
       cfg.infile = fopen(argv[arg], "r");
-      if (cfg.infile == NULL) {
+      if (!cfg.infile) {
         fprintf(stderr, "\n\x1b[31mError:\x1b[91m Couldn't open file\x1b[0m %s \x1b[91mfor reading!\x1b[0m\n\n", argv[arg]);
         exit(EXIT_FAILURE);
       }
@@ -298,7 +298,7 @@ struct config prsargs(int argc, char **argv) {
     ++arg;
   }
 
-  if (cfg.infile == NULL) {
+  if (!cfg.infile) {
     fprintf(stderr, "\n\x1b[31mError:\x1b[91m No input file specified!\x1b[0m\n\n");
     exit(EXIT_FAILURE);
   }
@@ -341,7 +341,7 @@ int main(int argc, char **argv) {
     }
   }
 
-  if (cfg.outfile != NULL) {
+  if (cfg.outfile) {
     for (i = 0; i != s; ++i)
       prtbuf(buf + i * SQUARES_NUM, cfg.outfile);
 
