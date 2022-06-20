@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DIGIT_OFFSET 48
+#define DIGIT_OFFSET '0'
 #define GROUP_SIZE 9
 #define GROUPS_NUM 27
 #define GROUPS_PER_SQUARE 3
@@ -232,43 +232,37 @@ struct config prsargs(int argc, char **argv) {
 
   while (arg != argc) {
     if (!strcmp("--max-solutions", argv[arg]) || !strcmp("-m", argv[arg])) {
-      if (argc == 1) {
+      if (++arg == argc) {
         fprintf(stderr, "\n\x1b[31mError:\x1b[91m No value for max-solutions specified!\x1b[0m\n\n");
         exit(EXIT_FAILURE);
       }
-      cfg.maxsol = atoi(argv[1]);
+      cfg.maxsol = atoi(argv[arg]);
       if (cfg.maxsol < 1) {
         fprintf(stderr, "\n\x1b[31mError:\x1b[91m Max-solutions must be a numeric value and at least\x1b[0m 1\x1b[91m!\x1b[0m\n\n");
         exit(EXIT_FAILURE);
       }
-      ++argv;
-      --argc;
     } else if (!strcmp("--output", argv[arg]) || !strcmp("-o", argv[arg])) {
-      if (argc == 1) {
+      if (++arg == argc) {
         fprintf(stderr, "\n\x1b[31mError:\x1b[91m No output file specified!\x1b[0m\n\n");
         exit(EXIT_FAILURE);
       }
-      cfg.outfile = fopen(argv[1], "w");
+      cfg.outfile = fopen(argv[arg], "w");
       if (!cfg.outfile) {
-        fprintf(stderr, "\n\x1b[31mError:\x1b[91m Couldn't open file\x1b[0m %s \x1b[91mfor writing!\x1b[0m\n\n", argv[1]);
+        fprintf(stderr, "\n\x1b[31mError:\x1b[91m Couldn't open file\x1b[0m %s \x1b[91mfor writing!\x1b[0m\n\n", argv[arg]);
         exit(EXIT_FAILURE);
       }
-      ++argv;
-      --argc;
     } else if (!strcmp("--hide-progress-bar", argv[arg]) || !strcmp("-b", argv[arg])) {
       cfg.prgbar = false;
     } else if (!strcmp("--progress-update-depth", argv[arg]) || !strcmp("-d", argv[arg])) {
-      if (argc == 1) {
+      if (++arg == argc) {
         fprintf(stderr, "\n\x1b[31mError:\x1b[91m No value for progress-update-depth specified!\x1b[0m\n\n");
         exit(EXIT_FAILURE);
       }
-      cfg.prgdep = atoi(argv[1]);
+      cfg.prgdep = atoi(argv[arg]);
       if (cfg.prgdep < 1 || cfg.prgdep > SQUARES_NUM) {
         fprintf(stderr, "\n\x1b[31mError:\x1b[91m Progress-update-depth must be a numeric value and in range\x1b[0m 1 \x1b[91m-\x1b[0m 81\x1b[91m!\x1b[0m\n\n");
         exit(EXIT_FAILURE);
       }
-      ++argv;
-      --argc;
     } else if (!strcmp("--quiet", argv[arg]) || !strcmp("-q", argv[arg])) {
       cfg.stream = fopen(NULL_FILE, "w");
       if (!cfg.stream) {
