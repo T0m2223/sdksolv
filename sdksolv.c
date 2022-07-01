@@ -17,25 +17,6 @@
 
 #define BAR_SIZE 25
 
-#if __linux__
-#include <strings.h>
-#define NULL_FILE "/dev/null"
-
-#elif _WIN32
-#define NULL_FILE "NUL"
-int ffs(int i) {
-  static const unsigned char table[] = {
-    0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8
-  };
-  unsigned int a;
-  unsigned int x = i & -i;
-
-  a = x <= 0xffff ? (x <= 0xff ? 0 : 8) : (x <= 0xffffff ? 16 : 24);
-
-  return table[x >> a] + a;
-}
-#endif
-
 const int grpdict[SQUARES_NUM][GROUPS_PER_SQUARE] = {
   0, 9, 18, 0, 9, 19, 0, 9, 20, 1, 9, 21, 1, 9, 22, 1, 9, 23, 2, 9, 24, 2, 9, 25, 2, 9, 26, 0, 10, 18, 0, 10, 19, 0, 10, 20, 1, 10, 21, 1, 10, 22, 1, 10, 23, 2, 10, 24, 2, 10, 25, 2, 10, 26, 0, 11, 18, 0, 11, 19, 0, 11, 20, 1, 11, 21, 1, 11, 22, 1, 11, 23, 2, 11, 24, 2, 11, 25, 2, 11, 26, 3, 12, 18, 3, 12, 19, 3, 12, 20, 4, 12, 21, 4, 12, 22, 4, 12, 23, 5, 12, 24, 5, 12, 25, 5, 12, 26, 3, 13, 18, 3, 13, 19, 3, 13, 20, 4, 13, 21, 4, 13, 22, 4, 13, 23, 5, 13, 24, 5, 13, 25, 5, 13, 26, 3, 14, 18, 3, 14, 19, 3, 14, 20, 4, 14, 21, 4, 14, 22, 4, 14, 23, 5, 14, 24, 5, 14, 25, 5, 14, 26, 6, 15, 18, 6, 15, 19, 6, 15, 20, 7, 15, 21, 7, 15, 22, 7, 15, 23, 8, 15, 24, 8, 15, 25, 8, 15, 26, 6, 16, 18, 6, 16, 19, 6, 16, 20, 7, 16, 21, 7, 16, 22, 7, 16, 23, 8, 16, 24, 8, 16, 25, 8, 16, 26, 6, 17, 18, 6, 17, 19, 6, 17, 20, 7, 17, 21, 7, 17, 22, 7, 17, 23, 8, 17, 24, 8, 17, 25, 8, 17, 26
 };
@@ -46,8 +27,8 @@ struct square {
 atomic_bool done;
 struct config {
   int maxsol, prgdep;
-  FILE *outfile, *stream, *infile;
-  bool prgbar, verbose;
+  FILE *outfile, *infile;
+  bool prgbar, quiet, verbose, color;
 };
 
 void aplval(int sqr) {
@@ -120,7 +101,7 @@ void wrtobuf(int *buf) {
   int i;
 
   for (i = 0; i != SQUARES_NUM; ++i)
-    buf[sqrpool[i].ind] = ffs(sqrpool[i].val >> 1);
+    buf[sqrpool[i].ind] = __builtin_ctz(sqrpool[i].val);
 }
 
 int solve(int end, int n, int *buf) {
@@ -167,16 +148,16 @@ unsigned long long calcprg(int prgdep) {
   return prg;
 }
 
-void prtprg(unsigned long long prg, int prgdep, FILE *stream) {
+void prtprg(unsigned long long prg, int prgdep) {
   int i, tags = floor(BAR_SIZE * prg / (pow(GROUP_SIZE, prgdep)));
 
-  fputs("\x1b[1A\x1b[91mProgress: [", stream);
+  fputs("\x1b[1A\x1b[91mProgress: [", stdout);
   for (i = 0; i != tags; ++i)
-    fputc('#', stream);
-  fputs("\x1b[0m", stream);
+    fputc('#', stdout);
+  fputs("\x1b[0m", stdout);
   for (; i != BAR_SIZE; ++i)
-    fputc('.', stream);
-  fputs("\x1b[91m]\x1b[0m\n", stream);
+    fputc('.', stdout);
+  fputs("\x1b[91m]\x1b[0m\n", stdout);
 }
 
 void *barrtn(void *arg) {
@@ -185,38 +166,38 @@ void *barrtn(void *arg) {
 
   while (!done) {
     prg = calcprg(cfg.prgdep);
-    prtprg(prg, cfg.prgdep, cfg.stream);
+    prtprg(prg, cfg.prgdep);
   }
 
   return NULL;
 }
 
-void prtbuf(const int *buf, FILE *stream) {
+void prtbuf(const int *buf, FILE *fp) {
   int r, c, v;
 
-  fputs("╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗\n║", stream);
+  fputs("╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗\n║", fp);
   for (r = 0; r != 9; ++r) {
     for (c = 0; c != 9; ++c) {
       v = buf[r * 9 + c];
       if (v) {
-        fputc(' ', stream);
-        fputc(v + DIGIT_OFFSET, stream);
+        fputc(' ', fp);
+        fputc(v + DIGIT_OFFSET, fp);
       } else
-        fputs("  ", stream);
+        fputs("  ", fp);
       if (c % 3 == 2)
-        fputs(" ║", stream);
+        fputs(" ║", fp);
       else
-        fputs(" │", stream);
+        fputs(" │", fp);
     }
 
     if (r == 8)
       break;
     else if (r % 3 == 2)
-      fputs("\n╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣\n║", stream);
+      fputs("\n╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣\n║", fp);
     else
-      fputs("\n╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n║", stream);
+      fputs("\n╟───┼───┼───╫───┼───┼───╫───┼───┼───╢\n║", fp);
   }
-  fputs("\n╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝\n", stream);
+  fputs("\n╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝\n", fp);
 }
 
 struct config prsargs(int argc, char **argv) {
@@ -224,68 +205,97 @@ struct config prsargs(int argc, char **argv) {
   struct config cfg = {
     .maxsol = 1,
     .outfile = NULL,
-    .prgbar = true,
+    .prgbar = false,
     .prgdep = 3,
-    .stream = stdout,
+    .quiet = false,
     .verbose = false,
+    .color = false,
     .infile = NULL
   };
 
   while (arg != argc) {
     if (!strcmp("--max-solutions", argv[arg]) || !strcmp("-m", argv[arg])) {
       if (++arg == argc) {
-        fputs("\n\x1b[31mError:\x1b[91m No value for max-solutions specified!\x1b[0m\n\n", stderr);
+        if (cfg.color)
+          fputs("\n\x1b[31mError:\x1b[91m No value for max-solutions specified!\x1b[0m\n\n", stderr);
+        else
+          fputs("\nError: No value for max-solutions specified!\n\n", stderr);
         exit(EXIT_FAILURE);
       }
       cfg.maxsol = atoi(argv[arg]);
       if (cfg.maxsol < 1) {
-        fputs("\n\x1b[31mError:\x1b[91m Max-solutions must be a numeric value and at least\x1b[0m 1\x1b[91m!\x1b[0m\n\n", stderr);
+        if (cfg.color)
+          fputs("\n\x1b[31mError:\x1b[91m Max-solutions must be a numeric value and at least\x1b[0m 1\x1b[91m!\x1b[0m\n\n", stderr);
+        else
+          fputs("\nError: Max-solutions must be a numeric value and at least 1!\n\n", stderr);
         exit(EXIT_FAILURE);
       }
     } else if (!strcmp("--output", argv[arg]) || !strcmp("-o", argv[arg])) {
       if (++arg == argc) {
-        fputs("\n\x1b[31mError:\x1b[91m No output file specified!\x1b[0m\n\n", stderr);
+        if (cfg.color)
+          fputs("\n\x1b[31mError:\x1b[91m No output file specified!\x1b[0m\n\n", stderr);
+        else
+          fputs("\nError: No output file specified!\n\n", stderr);
         exit(EXIT_FAILURE);
       }
       cfg.outfile = fopen(argv[arg], "w");
       if (!cfg.outfile) {
-        fprintf(stderr, "\n\x1b[31mError:\x1b[91m Couldn't open file\x1b[0m %s \x1b[91mfor writing!\x1b[0m\n\n", argv[arg]);
+        if (cfg.color)
+          fprintf(stderr, "\n\x1b[31mError:\x1b[91m Couldn't open file\x1b[0m %s \x1b[91mfor writing!\x1b[0m\n\n", argv[arg]);
+        else
+          fprintf(stderr, "\nError: Couldn't open file %s for writing!\n\n", argv[arg]);
         exit(EXIT_FAILURE);
       }
-    } else if (!strcmp("--hide-progress-bar", argv[arg]) || !strcmp("-b", argv[arg])) {
-      cfg.prgbar = false;
+    } else if (!strcmp("--progress-bar", argv[arg]) || !strcmp("-b", argv[arg])) {
+      cfg.prgbar = true;
     } else if (!strcmp("--progress-update-depth", argv[arg]) || !strcmp("-d", argv[arg])) {
       if (++arg == argc) {
-        fputs("\n\x1b[31mError:\x1b[91m No value for progress-update-depth specified!\x1b[0m\n\n", stderr);
+        if (cfg.color)
+          fputs("\n\x1b[31mError:\x1b[91m No value for progress-update-depth specified!\x1b[0m\n\n", stderr);
+        else
+          fputs("\nError: No value for progress-update-depth specified!\n\n", stderr);
         exit(EXIT_FAILURE);
       }
       cfg.prgdep = atoi(argv[arg]);
       if (cfg.prgdep < 1 || cfg.prgdep > SQUARES_NUM) {
-        fputs("\n\x1b[31mError:\x1b[91m Progress-update-depth must be a numeric value and in range\x1b[0m 1 \x1b[91m-\x1b[0m 81\x1b[91m!\x1b[0m\n\n", stderr);
+        if (cfg.color)
+          fputs("\n\x1b[31mError:\x1b[91m Progress-update-depth must be a numeric value and in range\x1b[0m 1 \x1b[91m-\x1b[0m 81\x1b[91m!\x1b[0m\n\n", stderr);
+        else
+          fputs("\nError: Progress-update-depth must be a numeric value and in range 1 - 81!\n\n", stderr);
         exit(EXIT_FAILURE);
       }
     } else if (!strcmp("--quiet", argv[arg]) || !strcmp("-q", argv[arg])) {
-      cfg.stream = fopen(NULL_FILE, "w");
-      if (!cfg.stream) {
-        fprintf(stderr, "\n\x1b[31mError:\x1b[91m Couldn't open\x1b[0m %s \x1b[91mfor writing!\x1b[0m\n\n", NULL_FILE);
-        exit(EXIT_FAILURE);
-      }
+      cfg.quiet = true;
     } else if (!strcmp("--verbose", argv[arg]) || !strcmp("-v", argv[arg])) {
       cfg.verbose = true;
+    } else if (!strcmp("--color", argv[arg]) || !strcmp("-c", argv[arg])) {
+      cfg.color = true;
     } else if (!strcmp("--help", argv[arg]) || !strcmp("-h", argv[arg])) {
-      printf("\n\x1b[31mUsage:\x1b[91m %s [\x1b[0moption...\x1b[91m] <\x1b[0mfile\x1b[91m>\n\n\x1b[31mOptions:\x1b[0m\n  -\x1b[91mm\x1b[0m, --\x1b[91mmax-solutions <\x1b[0mnumber\x1b[91m>\x1b[0m          Stop after n solutions have been found\n  -\x1b[91mo\x1b[0m, --\x1b[91moutput <\x1b[0mfile\x1b[91m>\x1b[0m                   Print solutions to file\n\n  -\x1b[91mb\x1b[0m, --\x1b[91mhide-progress-bar\x1b[0m               Disable progress bar\n  -\x1b[91md\x1b[0m, --\x1b[91mprogress-update-depth <\x1b[0mnumber\x1b[91m>\x1b[0m  Precision of progress bar\n\n  -\x1b[91mq\x1b[0m, --\x1b[91mquiet\x1b[0m                           Only print errors\n  -\x1b[91mv\x1b[0m, --\x1b[91mverbose\x1b[0m                         Print out all found solutions\n\n  -\x1b[91mh\x1b[0m, --\x1b[91mhelp\x1b[0m                            Print this page\n\n", argv[0]);
+      if (cfg.color)
+        printf("\n\x1b[31mUsage:\x1b[91m %s [\x1b[0moption...\x1b[91m] <\x1b[0mfile\x1b[91m>\x1b[0m\n  Solves the sudoku descriped by the input file\n\n\x1b[31mOptions:\x1b[0m\n  -\x1b[91mm\x1b[0m, --\x1b[91mmax-solutions <\x1b[0mnumber\x1b[91m>\x1b[0m          Stop after n solutions have been found\n  -\x1b[91mo\x1b[0m, --\x1b[91moutput <\x1b[0mfile\x1b[91m>\x1b[0m                   Print solutions to file\n\n  -\x1b[91mb\x1b[0m, --\x1b[91mprogress-bar\x1b[0m                    Show progress bar\n  -\x1b[91md\x1b[0m, --\x1b[91mprogress-update-depth <\x1b[0mnumber\x1b[91m>\x1b[0m  Precision of progress bar\n\n  -\x1b[91mq\x1b[0m, --\x1b[91mquiet\x1b[0m                           Only print errors\n  -\x1b[91mv\x1b[0m, --\x1b[91mverbose\x1b[0m                         Print out all found solutions\n  -\x1b[91mc\x1b[0m, --\x1b[91mcolor\x1b[0m                           Use ANSI escape sequences to display colors\n\n  -\x1b[91mh\x1b[0m, --\x1b[91mhelp\x1b[0m                            Print this page and quit\n\n", argv[0]);
+      else
+        printf("\nUsage: %s [option...] <file>\n  Solves the sudoku descriped by the input file\n\nOptions:\n  -m, --max-solutions <number>          Stop after n solutions have been found\n  -o, --output <file>                   Print solutions to file\n\n  -b, --progress-bar                    Show progress bar\n  -d, --progress-update-depth <number>  Precision of progress bar\n\n  -q, --quiet                           Only print errors\n  -v, --verbose                         Print out all found solutions\n  -c, --color                           Use ANSI escape sequences to display colors\n\n  -h, --help                            Print this page and quit\n\n", argv[0]);
       exit(EXIT_SUCCESS);
-    } else if(*argv[arg] == '-') {
-      fprintf(stderr, "\n\x1b[31mError:\x1b[91m Unknown option\x1b[0m %s\x1b[91m!\x1b[0m\n\n\x1b[32mHint:\x1b[92m Try\x1b[0m %s --help \x1b[92mfor help page.\x1b[0m\n\n", argv[arg], argv[0]);
+    } else if (*argv[arg] == '-') {
+      if (cfg.color)
+        fprintf(stderr, "\n\x1b[31mError:\x1b[91m Unknown option\x1b[0m %s\x1b[91m!\x1b[0m\n\n\x1b[32mHint:\x1b[92m Try\x1b[0m %s --help \x1b[92mfor help page.\x1b[0m\n\n", argv[arg], argv[0]);
+      else
+        fprintf(stderr, "\nError: Unknown option %s!\n\nHint: Try %s --help for help page.\n\n", argv[arg], argv[0]);
       exit(EXIT_FAILURE);
     } else {
       if (cfg.infile) {
-        fputs("\n\x1b[31mError:\x1b[91m Multiple input files specified!\x1b[0m\n\n", stderr);
+        if (cfg.color)
+          fputs("\n\x1b[31mError:\x1b[91m Multiple input files specified!\x1b[0m\n\n", stderr);
+        else
+          fputs("\nError: Multiple input files specified!\n\n", stderr);
         exit(EXIT_FAILURE);
       }
       cfg.infile = fopen(argv[arg], "r");
       if (!cfg.infile) {
-        fprintf(stderr, "\n\x1b[31mError:\x1b[91m Couldn't open file\x1b[0m %s \x1b[91mfor reading!\x1b[0m\n\n", argv[arg]);
+        if (cfg.color)
+          fprintf(stderr, "\n\x1b[31mError:\x1b[91m Couldn't open file\x1b[0m %s \x1b[91mfor reading!\x1b[0m\n\n", argv[arg]);
+        else
+          fprintf(stderr, "\nError: Couldn't open file %s for reading!\n\n", argv[arg]);
         exit(EXIT_FAILURE);
       }
     }
@@ -294,12 +304,22 @@ struct config prsargs(int argc, char **argv) {
   }
 
   if (!cfg.infile) {
-    fputs("\n\x1b[31mError:\x1b[91m No input file specified!\x1b[0m\n\n", stderr);
+    if (cfg.color)
+      fputs("\n\x1b[31mError:\x1b[91m No input file specified!\x1b[0m\n\n", stderr);
+    else
+      fputs("\nError: No input file specified!\n\n", stderr);
     exit(EXIT_FAILURE);
   }
 
-  if(cfg.prgdep > 9)
-    fputs("\n\x1b[33mWarning:\x1b[93m High progress-update-depth may result in graphical errors!\x1b[0m\n\n", cfg.stream);
+  if (cfg.prgbar && !cfg.color && !cfg.quiet)
+      fputs("\nWarning: Cannot display progress bar without --color option!\n\n", stdout);
+
+  if (cfg.prgdep > 9 && !cfg.quiet) {
+    if (cfg.color)
+      fputs("\n\x1b[33mWarning:\x1b[93m High progress-update-depth may result in graphical errors!\x1b[0m\n\n", stdout);
+    else
+      fputs("\nWarning: High progress-update-depth may result in graphical errors!\n\n", stdout);
+  }
 
   return cfg;
 }
@@ -309,30 +329,44 @@ int main(int argc, char **argv) {
   int s, i, end = rdfile(cfg.infile), buf[cfg.maxsol * SQUARES_NUM];
   pthread_t barthrd;
 
-  fputs("\x1b[?25l\n\x1b[91m          < SUDOKU SOLVER >\x1b[31m\n\n  Read-in field:\x1b[0m\n", cfg.stream);
-  wrtobuf(buf);
-  prtbuf(buf, cfg.stream);
+  if (!cfg.quiet) {
+    if (cfg.color)
+      fputs("\x1b[?25l\n\x1b[91m          < SUDOKU SOLVER >\x1b[31m\n\n  Read-in field:\x1b[0m\n", stdout);
+    else
+      fputs("          < SUDOKU SOLVER >\n\n  Read-in field:\n", stdout);
+    wrtobuf(buf);
+    prtbuf(buf, stdout);
+    fputs("\n\n", stdout);
 
-  fputs("\n\n", cfg.stream);
-  if (cfg.prgbar) {
-    done = false;
-    pthread_create(&barthrd, NULL, &barrtn, &cfg);
+    if (cfg.prgbar && cfg.color) {
+      done = false;
+      pthread_create(&barthrd, NULL, &barrtn, &cfg);
+    }
   }
 
   initgps();
   s = initvals(end) ? solve(end, cfg.maxsol, buf) : 0;
-  if (cfg.prgbar) {
-    done = true;
-    pthread_join(barthrd, NULL);
-    prtprg(pow(GROUP_SIZE, cfg.prgdep), cfg.prgdep, cfg.stream);
+
+  if (!cfg.quiet) {
+    if (cfg.prgbar && cfg.color) {
+      done = true;
+      pthread_join(barthrd, NULL);
+      prtprg(pow(GROUP_SIZE, cfg.prgdep), cfg.prgdep);
+    }
+
+    if (cfg.color)
+      printf("\x1b[0m─────────────────────────────────────\n\n\x1b[91mFound \x1b[0m%d\x1b[91m solution(s)...\x1b[0m\n", s);
+    else
+      printf("─────────────────────────────────────\n\nFound %d solution(s)...\n", s);
   }
 
-  fprintf(cfg.stream, "\x1b[0m─────────────────────────────────────\n\n\x1b[91mFound \x1b[0m%d\x1b[91m solution(s)...\x1b[0m\n", s);
-
-  if (cfg.verbose) {
+  if (!cfg.quiet && cfg.verbose) {
     for (i = 0; i != s; ++i) {
-      fprintf(cfg.stream, "\n  \x1b[31mSolution[\x1b[0m%d\x1b[31m]:\x1b[0m\n", i);
-      prtbuf(buf + i * SQUARES_NUM, cfg.stream);
+      if (cfg.color)
+        printf("\n  \x1b[31mSolution[\x1b[0m%d\x1b[31m]:\x1b[0m\n", i);
+      else
+        printf("\n  Solution[%d]:\n", i);
+      prtbuf(buf + i * SQUARES_NUM, stdout);
     }
   }
 
@@ -343,8 +377,13 @@ int main(int argc, char **argv) {
     fclose(cfg.outfile);
   }
 
-  fputs("\n\x1b[91mDone.\x1b[0m\x1b[?25h\n\n", cfg.stream);
-  fclose(cfg.stream);
+  if (!cfg.quiet) {
+    if (cfg.color)
+      fputs("\n\x1b[91mDone.\x1b[0m\x1b[?25h\n\n", stdout);
+    else
+      fputs("\nDone.\n\n", stdout);
+  }
+
   return EXIT_SUCCESS;
 }
 
