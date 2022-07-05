@@ -333,7 +333,7 @@ int main(int argc, char **argv) {
     if (cfg.color)
       fputs("\x1b[?25l\n\x1b[91m          < SUDOKU SOLVER >\x1b[31m\n\n  Read-in field:\x1b[0m\n", stdout);
     else
-      fputs("          < SUDOKU SOLVER >\n\n  Read-in field:\n", stdout);
+      fputs("\n          < SUDOKU SOLVER >\n\n  Read-in field:\n", stdout);
     wrtobuf(buf);
     prtbuf(buf, stdout);
     fputs("\n\n", stdout);
