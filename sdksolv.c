@@ -31,14 +31,14 @@ struct config {
   bool prgbar, quiet, verbose, color;
 };
 
-void aplval(int sqr) {
+void aplyval(int sqr) {
   int i;
 
   for (i = 0; i != GROUPS_PER_SQUARE; ++i)
     *sqrpool[sqr].gps[i] |= sqrpool[sqr].val;
 }
 
-void rlvval(int sqr) {
+void relvval(int sqr) {
   int i;
 
   for (i = 0; i != GROUPS_PER_SQUARE; ++i)
@@ -46,13 +46,12 @@ void rlvval(int sqr) {
 }
 
 bool testval(int sqr, int val) {
-  int i;
+  int i, acc = 0;
 
   for (i = 0; i != GROUPS_PER_SQUARE; ++i)
-    if (val & *sqrpool[sqr].gps[i])
-      return false;
+    acc |= *sqrpool[sqr].gps[i];
 
-  return true;
+  return !(acc & val);
 }
 
 void initgps() {
@@ -68,7 +67,7 @@ bool initvals(int start) {
     if (!testval(start, sqrpool[start].val))
       return false;
 
-    aplval(start);
+    aplyval(start);
   }
 
   return true;
@@ -115,18 +114,18 @@ int solve(int end, int n, int *buf) {
             return i;
 
           sqrpool[d].val = EMPTY_SQUARE;
-          rlvval(--d);
+          relvval(--d);
           break;
         } else if (testval(d, j)) {
           sqrpool[d].val = j;
-          aplval(d++);
+          aplyval(d++);
           break;
         }
       }
     }
 
     wrtobuf(buf + i * SQUARES_NUM);
-    rlvval(--d);
+    relvval(--d);
   }
 
   return i;
