@@ -46,13 +46,12 @@ void rlvval(int sqr) {
 }
 
 bool testval(int sqr, int val) {
-  int i;
+  int i, acc = 0;
 
   for (i = 0; i != GROUPS_PER_SQUARE; ++i)
-    if (val & *sqrpool[sqr].gps[i])
-      return false;
+    acc |= *sqrpool[sqr].gps[i];
 
-  return true;
+  return !(acc & val);
 }
 
 void initgps() {
