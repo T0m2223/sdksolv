@@ -357,15 +357,15 @@ int main(int argc, char **argv) {
       printf("\x1b[0m─────────────────────────────────────\n\n\x1b[91mFound \x1b[0m%d\x1b[91m solution(s)...\x1b[0m\n", s);
     else
       printf("─────────────────────────────────────\n\nFound %d solution(s)...\n", s);
-  }
 
-  if (!cfg.quiet && cfg.verbose) {
-    for (i = 0; i != s; ++i) {
-      if (cfg.color)
-        printf("\n  \x1b[31mSolution[\x1b[0m%d\x1b[31m]:\x1b[0m\n", i);
-      else
-        printf("\n  Solution[%d]:\n", i);
-      prtbuf(buf + i * SQUARES_NUM, stdout);
+    if (cfg.verbose) {
+      for (i = 0; i != s; ++i) {
+        if (cfg.color)
+          printf("\n  \x1b[31mSolution[\x1b[0m%d\x1b[31m]:\x1b[0m\n", i);
+        else
+          printf("\n  Solution[%d]:\n", i);
+        prtbuf(buf + i * SQUARES_NUM, stdout);
+      }
     }
   }
 
